@@ -167,10 +167,6 @@ public final class SQLiteUtils {
 		return definition;
 	}
 
-	//////////////////////////////////////////////////////////////////////////////////////
-	// PRIVATE METHODS
-	//////////////////////////////////////////////////////////////////////////////////////
-
 	@SuppressWarnings("unchecked")
 	private static <T extends Model> List<T> processCursor(Class<? extends Model> type, Cursor cursor) {
 		final List<T> entities = new ArrayList<T>();
