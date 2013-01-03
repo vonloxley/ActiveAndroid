@@ -35,7 +35,7 @@ public class SelectTest extends SqlableTestCase {
 	}
 
 	public void testSelectStringColumns() {
-		assertSqlEquals("SELECT a, b, c ", new Select("a", "b", "c"));
+		assertSqlEquals("SELECT id, a, b, c ", new Select("a", "b", "c"));
 	}
 
 	public void testSelectDistinctColumns() {
