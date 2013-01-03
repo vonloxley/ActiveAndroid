@@ -31,6 +31,7 @@ public abstract class ActiveAndroidTestCase extends ApplicationTestCase<Applicat
 	}
 
 	protected void tearDown() throws Exception {
+		this.getContext().deleteDatabase("Application.db"); // Ignore return;
 		super.tearDown();
 	}
 
