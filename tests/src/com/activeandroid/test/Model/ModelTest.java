@@ -17,26 +17,71 @@ package com.activeandroid.test.Model;
  */
 
 import com.activeandroid.query.Select;
-import com.activeandroid.test.MockModel;
 import com.activeandroid.test.ActiveAndroidTestCase;
+import com.activeandroid.test.MockModel;
 
 public class ModelTest extends ActiveAndroidTestCase {
+	class CallbackMockModel extends MockModel{
+		public Boolean s=false;
+		public Boolean d=false;
 
-	public void testGetIdAfterSave(){		
+		protected void onSave() {s=true;};
+		protected void onDelete() {d=true;};
+	}
+
+	public void testGetIdAfterSave(){
 		MockModel m=new MockModel();
 		m.MockColumn=42;
 		m.save();
 		assertNotNull("getId() returned null after save()",m.getId());
-		
-	}		
-	
-	public void testGetIdAfterSaveAndSelect(){		
+
+	}
+
+	public void testGetIdAfterSaveAndSelect(){
 		MockModel m=new MockModel();
 		m.MockColumn=42;
 		m.save();
 		MockModel m2=new Select("MockColumn").from(MockModel.class).where("MockColumn=?", 42).executeSingle();
-		assertEquals(42, m.MockColumn); //Check 
+		assertEquals(42, m2.MockColumn); //Check
 		assertNotNull("getId() returned null after Select(\"MockColumn\")",m2.getId());
-	}		
+	}
 
+	public void testOnSave(){
+		CallbackMockModel m=new CallbackMockModel();
+		m.MockColumn=42;
+		assertFalse(m.s);
+		m.save();
+		assertTrue(m.s);
+	}
+
+	public void testThrowingOnSave(){
+		ThrowingCallbackMockModel m=new ThrowingCallbackMockModel();
+		m.ThrowExceptions=true;
+		m.MockColumn=42;
+		try{m.save();}
+		catch (RuntimeException e){}
+		assertNull(m.getId());
+	}
+
+	public void testOnDelete(){
+		CallbackMockModel m=new CallbackMockModel();
+		m.MockColumn=42;
+		m.save();
+		assertFalse(m.d);
+		m.delete();
+		assertTrue(m.d);
+	}
+
+	public void testThrowingOnDelete(){
+		ThrowingCallbackMockModel m=new ThrowingCallbackMockModel();
+		m.MockColumn=42;
+		m.save();
+		ThrowingCallbackMockModel m2=new Select("MockColumn").from(ThrowingCallbackMockModel.class).where("MockColumn=?", 42).executeSingle();
+		assertNotNull(m2);
+		m.ThrowExceptions=true;
+		try{m.delete();}
+		catch (RuntimeException e){}
+		m2=new Select("MockColumn").from(ThrowingCallbackMockModel.class).where("MockColumn=?", 42).executeSingle();
+		assertNotNull(m2);
+	}
 }
