@@ -65,9 +65,9 @@ public final class Cache {
 
 		sEntities = new HashSet<Model>();
 
-		openDatabase();
-
 		sIsInitialized = true;
+
+		openDatabase();
 
 		Log.v("ActiveAndroid initialized succesfully.");
 	}
