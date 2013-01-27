@@ -4,9 +4,9 @@
       android:versionCode="1"
       android:versionName="1.0">
     <uses-sdk android:minSdkVersion="4"/>
-    <application android:label="@string/app_name" android:icon="@drawable/ic_launcher">
+    <application>
         <activity android:name="ActiveAndroid"
-                  android:label="@string/app_name">
+                  android:label="ActiveAndroid">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
