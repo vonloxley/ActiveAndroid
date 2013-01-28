@@ -140,6 +140,9 @@ public final class SQLiteUtils {
 		else if (ReflectionUtils.isModel(type)) {
 			definition = name + " " + SQLiteType.INTEGER.toString();
 		}
+		else if (ReflectionUtils.isSubclassOf(type, Enum.class)) {
+			definition = name + " " + SQLiteType.TEXT.toString();
+		}
 
 		if (definition != null) {
 			if (column.length() > -1) {
@@ -152,6 +155,10 @@ public final class SQLiteUtils {
 
 			if (column.notNull()) {
 				definition += " NOT NULL ON CONFLICT " + column.onNullConflict().toString();
+			}
+
+			if (column.unique()) {
+				definition += " UNIQUE ON CONFLICT " + column.onUniqueConflict().toString();
 			}
 
 			if (FOREIGN_KEYS_SUPPORTED && ReflectionUtils.isModel(type)) {
