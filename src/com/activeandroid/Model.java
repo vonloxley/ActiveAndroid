@@ -160,6 +160,10 @@ public abstract class Model {
 		return new Select().from(type).where("Id=?", id).executeSingle();
 	}
 
+	public static <T extends Model> List<T> all(Class<? extends Model> type) {
+		return new Select().from(type).execute();
+	}
+
 	public static void registerDataSetObserver(Class<? extends Model> type, DataSetObserver observer) {
 		Cache.getTableInfo(type).registerObserver(observer);
 	}
