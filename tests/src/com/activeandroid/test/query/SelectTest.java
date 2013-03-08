@@ -47,4 +47,8 @@ public class SelectTest extends SqlableTestCase {
 		assertSqlEquals("SELECT ALL * FROM MockModel",
 				new Select().all().from(MockModel.class));
 	}
+	public void testAutoidWithStars() {
+		assertSqlEquals("SELECT Users.* ", new Select("Users.*"));
+		assertSqlEquals("SELECT * ", new Select("*"));
+	}
 }
