@@ -17,6 +17,7 @@ package com.activeandroid.query;
  */
 
 import java.util.Arrays;
+import java.util.List;
 
 import android.text.TextUtils;
 
@@ -84,7 +85,7 @@ public final class Select implements Sqlable {
 		}
 
 		if (mColumns != null && mColumns.length > 0) {
-			if (!Arrays.asList(mColumns).contains("id") && !mDistinct)
+			if (!isIdOrStarInColumns() && !mDistinct )
 				sql.append("id, ");
 
 			sql.append(TextUtils.join(", ", mColumns) + " ");
@@ -94,5 +95,27 @@ public final class Select implements Sqlable {
 		}
 
 		return sql.toString();
+	}
+	
+	private Boolean isIdOrStarInColumns(){
+		Boolean ret;
+		List<String> cols=Arrays.asList(mColumns);
+		
+		ret=cols.contains("id");
+		
+		if (!ret){
+			ret=cols.contains("*");
+		}
+		
+		if (!ret){
+			for (String col : cols) {
+				if (col.contains("*")){
+					ret=true;
+					break;
+				}
+			}
+		}
+		
+		return ret;				 
 	}
 }
