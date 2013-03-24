@@ -17,12 +17,11 @@ package com.activeandroid;
  */
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
@@ -37,7 +36,8 @@ public final class Cache {
 	private static ModelInfo sModelInfo;
 	private static DatabaseHelper sDatabaseHelper;
 
-	private static Set<Model> sEntities;
+	private static LruCache<String, Model> sEntities;
+	private final static int CACHESIZE = 1024; // Arbitrary cachsize
 
 	private static boolean sIsInitialized = false;
 
@@ -63,7 +63,7 @@ public final class Cache {
 		sModelInfo = new ModelInfo(application);
 		sDatabaseHelper = new DatabaseHelper(sContext);
 
-		sEntities = new HashSet<Model>();
+		sEntities = new LruCache<String, Model>(CACHESIZE);
 
 		sIsInitialized = true;
 
@@ -73,7 +73,7 @@ public final class Cache {
 	}
 
 	public static synchronized void clear() {
-		sEntities = new HashSet<Model>();
+		sEntities.evictAll();
 		Log.v("Cache cleared.");
 	}
 
@@ -115,25 +115,23 @@ public final class Cache {
 
 	public static synchronized void addEntity(Model entity) {
 		checkInitialization();
-		sEntities.add(entity);
+
+		if (entity.getId() != null) {
+			sEntities.put(entity.getClass().toString().replaceAll("^class ", "")+'|'+entity.getId(), entity);
+		}
 	}
 
 	public static synchronized Model getEntity(Class<? extends Model> type, long id) {
 		checkInitialization();
-		for (Model entity : sEntities) {
-			if (entity != null && entity.getClass() != null && entity.getClass() == type && entity.getId() != null
-					&& entity.getId() == id) {
 
-				return entity;
-			}
-		}
+		Model entity=sEntities.get(type.getName()+'|'+id);
 
-		return null;
+		return entity;
 	}
 
 	public static synchronized void removeEntity(Model entity) {
 		checkInitialization();
-		sEntities.remove(entity);
+		sEntities.remove(entity.getClass().toString().replaceAll("^class ", "")+'|'+entity.getId());
 	}
 
 	// Model cache
