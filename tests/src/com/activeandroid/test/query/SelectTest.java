@@ -35,7 +35,7 @@ public class SelectTest extends SqlableTestCase {
 	}
 
 	public void testSelectStringColumns() {
-		assertSqlEquals("SELECT a, b, c ", new Select("a", "b", "c"));
+		assertSqlEquals("SELECT id, a, b, c ", new Select("a", "b", "c"));
 	}
 
 	public void testSelectDistinctColumns() {
@@ -46,5 +46,9 @@ public class SelectTest extends SqlableTestCase {
 	public void testFrom() {
 		assertSqlEquals("SELECT ALL * FROM MockModel",
 				new Select().all().from(MockModel.class));
+	}
+	public void testAutoidWithStars() {
+		assertSqlEquals("SELECT Users.* ", new Select("Users.*"));
+		assertSqlEquals("SELECT * ", new Select("*"));
 	}
 }

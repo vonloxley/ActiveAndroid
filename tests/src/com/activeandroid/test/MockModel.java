@@ -18,7 +18,10 @@ package com.activeandroid.test;
 
 import com.activeandroid.Model;
 import com.activeandroid.annotation.Table;
+import com.activeandroid.annotation.Column;
 
 @Table(name = "MockModel")
 public class MockModel extends Model {
+	@Column(name="MockColumn")
+	public int MockColumn;
 }

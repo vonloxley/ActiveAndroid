@@ -17,12 +17,11 @@ package com.activeandroid;
  */
 
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
 
 import android.app.Application;
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.util.LruCache;
 
 import com.activeandroid.serializer.TypeSerializer;
 import com.activeandroid.util.Log;
@@ -37,7 +36,8 @@ public final class Cache {
 	private static ModelInfo sModelInfo;
 	private static DatabaseHelper sDatabaseHelper;
 
-	private static Set<Model> sEntities;
+	private static LruCache<String, Model> sEntities;
+	private final static int CACHESIZE = 1024; // Arbitrary cachsize
 
 	private static boolean sIsInitialized = false;
 
@@ -63,21 +63,22 @@ public final class Cache {
 		sModelInfo = new ModelInfo(application);
 		sDatabaseHelper = new DatabaseHelper(sContext);
 
-		sEntities = new HashSet<Model>();
-
-		openDatabase();
+		sEntities = new LruCache<String, Model>(CACHESIZE);
 
 		sIsInitialized = true;
+
+		openDatabase();
 
 		Log.v("ActiveAndroid initialized succesfully.");
 	}
 
 	public static synchronized void clear() {
-		sEntities = new HashSet<Model>();
+		sEntities.evictAll();
 		Log.v("Cache cleared.");
 	}
 
 	public static synchronized void dispose() {
+		checkInitialization();
 		closeDatabase();
 		
 		sEntities = null;
@@ -92,56 +93,72 @@ public final class Cache {
 	// Database access
 
 	public static synchronized SQLiteDatabase openDatabase() {
+		if (sDatabaseHelper == null) {
+			checkInitialization();
+		}
 		return sDatabaseHelper.getWritableDatabase();
 	}
 
 	public static synchronized void closeDatabase() {
+		checkInitialization();
 		sDatabaseHelper.close();
 	}
 
 	// Context access
 
 	public static Context getContext() {
+		checkInitialization();
 		return sContext;
 	}
 
 	// Entity cache
 
 	public static synchronized void addEntity(Model entity) {
-		sEntities.add(entity);
+		checkInitialization();
+
+		if (entity.getId() != null) {
+			sEntities.put(entity.getClass().toString().replaceAll("^class ", "")+'|'+entity.getId(), entity);
+		}
 	}
 
 	public static synchronized Model getEntity(Class<? extends Model> type, long id) {
-		for (Model entity : sEntities) {
-			if (entity != null && entity.getClass() != null && entity.getClass() == type && entity.getId() != null
-					&& entity.getId() == id) {
+		checkInitialization();
 
-				return entity;
-			}
-		}
+		Model entity=sEntities.get(type.getName()+'|'+id);
 
-		return null;
+		return entity;
 	}
 
 	public static synchronized void removeEntity(Model entity) {
-		sEntities.remove(entity);
+		checkInitialization();
+		sEntities.remove(entity.getClass().toString().replaceAll("^class ", "")+'|'+entity.getId());
 	}
 
 	// Model cache
 
 	public static synchronized Collection<TableInfo> getTableInfos() {
+		checkInitialization();
 		return sModelInfo.getTableInfos();
 	}
 
 	public static synchronized TableInfo getTableInfo(Class<? extends Model> type) {
+		checkInitialization();
 		return sModelInfo.getTableInfo(type);
 	}
 
 	public static synchronized TypeSerializer getParserForType(Class<?> type) {
+		checkInitialization();
 		return sModelInfo.getTypeSerializer(type);
 	}
 
 	public static synchronized String getTableName(Class<? extends Model> type) {
+		checkInitialization();
 		return sModelInfo.getTableInfo(type).getTableName();
+	}
+
+	private static void checkInitialization() {
+		if (!sIsInitialized) {
+			throw new ActiveAndroidNotInitialized();
+		}
 	}
 }
