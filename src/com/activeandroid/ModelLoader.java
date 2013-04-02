@@ -1,6 +1,5 @@
-package com.activeandroid;
 
-import java.util.List;
+package com.activeandroid;
 
 import android.content.Context;
 import android.database.DataSetObserver;
@@ -9,69 +8,71 @@ import android.support.v4.content.AsyncTaskLoader;
 
 import com.activeandroid.query.From;
 
+import java.util.List;
+
+
 /**
  * The Class ModelLoader.
  * 
- * @param <T>
- *            the generic type
+ * @param <T> the generic type
  */
 public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 
 	/** The m data set observer. */
 	private DataSetObserver mDataSetObserver;
-	
+
 	/** The m query. */
-	private From mQuery;
+	private final From mQuery;
 
 	/** The m results. */
 	private List<T> mResults;
 
+
 	/**
 	 * Instantiates a new model loader.
 	 * 
-	 * @param context
-	 *            the context
-	 * @param from
-	 *            the from
+	 * @param context the context
+	 * @param from the from
 	 */
 	public ModelLoader(Context context, From from) {
 		super(context);
 		this.mQuery = from;
 	}
 
+
 	/**
 	 * Called when there is new data to deliver to the client. The super class
 	 * will take care of delivering it; the implementation here just adds a
 	 * little more logic.
 	 * 
-	 * @param toolData
-	 *            the tool data
+	 * @param results the results
 	 */
 	@Override
-	public void deliverResult(List<T> toolData) {
+	public void deliverResult(List<T> results) {
 		if (this.isReset()) {
 			// An async query came in while the loader is stopped. We
 			// don't need the result.
-			if (toolData != null) {
-				this.onReleaseResources(toolData);
+			if (results != null) {
+				this.onReleaseResources(results);
 			}
 		}
-		List<T> oldToolData = toolData;
-		this.mResults = toolData;
+		List<T> oldResults = results;
+		this.mResults = results;
 
 		if (this.isStarted()) {
 			// If the Loader is currently started, we can immediately
 			// deliver its results.
-			super.deliverResult(toolData);
+			super.deliverResult(results);
 		}
 
 		// At this point we can release the resources associated with
-		// 'oldApps' if needed; now that the new result is delivered we
+		// 'oldResults' if needed; now that the new result is delivered we
 		// know that it is no longer in use.
-		if (oldToolData != null) {
-			this.onReleaseResources(oldToolData);
+		if (oldResults != null) {
+			this.onReleaseResources(oldResults);
 		}
 	}
+
 
 	/**
 	 * This is where the bulk of our work is done. This function is called in a
@@ -86,29 +87,30 @@ public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 		return results;
 	}
 
+
 	/**
 	 * Handles a request to cancel a load.
 	 * 
-	 * @param toolData
-	 *            the tool data
+	 * @param toolData the tool data
 	 */
 	@Override
-	public void onCanceled(List<T> toolData) {
-		super.onCanceled(toolData);
+	public void onCanceled(List<T> results) {
+		super.onCanceled(results);
 		// At this point we can release the resources
-		this.onReleaseResources(toolData);
+		this.onReleaseResources(results);
 	}
+
 
 	/**
 	 * On release resources.
 	 * 
-	 * @param toolData
-	 *            the tool data
+	 * @param toolData the tool data
 	 */
-	protected void onReleaseResources(List<T> toolData) {
+	protected void onReleaseResources(List<T> results) {
 		// For a simple List<> there is nothing to do. For something
 		// like a Cursor, we would close it here.
 	}
+
 
 	/**
 	 * Handles a request to completely reset the Loader.
@@ -134,6 +136,7 @@ public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 		}
 	}
 
+
 	/**
 	 * Handles a request to start the Loader.
 	 */
@@ -145,19 +148,20 @@ public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 			this.deliverResult(this.mResults);
 		}
 
-		// Start watching for changes in the job data.
+		// Start watching for changes in the data.
 		if (this.mDataSetObserver == null) {
 			this.mDataSetObserver = new DataSetObserver() {
 				@Override
 				public void onChanged() {
 					super.onChanged();
-					
+
 					/*
 					 * It's always a freakin' threading issue, ain't it?
 					 * Directly calling onContentChanged here doesn't seem to
-					 * consistently work, but posting it to the main thread does.
+					 * consistently work, but posting it to the main thread
+					 * does.
 					 */
-					
+
 					// Get a handler that can be used to post to the main thread
 					Handler mainHandler = new Handler(getContext().getMainLooper());
 
@@ -167,7 +171,7 @@ public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 							ModelLoader.this.onContentChanged();
 						}
 					};
-					
+
 					mainHandler.post(myRunnable);
 
 				}
@@ -182,6 +186,7 @@ public class ModelLoader<T extends Model> extends AsyncTaskLoader<List<T>> {
 			this.forceLoad();
 		}
 	}
+
 
 	/**
 	 * Handles a request to stop the Loader.
