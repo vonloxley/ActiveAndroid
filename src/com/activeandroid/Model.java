@@ -25,6 +25,7 @@ import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.activeandroid.annotation.Column;
+import com.activeandroid.content.ContentProvider;
 import com.activeandroid.query.Delete;
 import com.activeandroid.query.Select;
 import com.activeandroid.serializer.TypeSerializer;
@@ -54,6 +55,9 @@ public abstract class Model {
 		onDelete();
 		Model.delete(getClass(), getId());
 		Cache.removeEntity(this);
+
+		Cache.getContext().getContentResolver()
+				.notifyChange(ContentProvider.createUri(mTableInfo.getType(), mId), null);
 	}
 
 	public final void save() {
@@ -156,7 +160,7 @@ public abstract class Model {
 		Cache.getTableInfo(type).notifyChanged();
 	}
 
-	public static <T extends Model> T load(Class<? extends Model> type, long id) {
+	public static <T extends Model> T load(Class<T> type, long id) {
 		return new Select().from(type).where("Id=?", id).executeSingle();
 	}
 
@@ -260,13 +264,13 @@ public abstract class Model {
 				Cache.addEntity(this);
 			}
 			catch (IllegalArgumentException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 			catch (IllegalAccessException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 			catch (SecurityException e) {
-				Log.e(e.getMessage());
+                Log.e(e.getClass().getName(), e);
 			}
 		}
 	}
@@ -275,7 +279,7 @@ public abstract class Model {
 	// PROTECTED METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	protected final <E extends Model> List<E> getMany(Class<? extends Model> type, String foreignKey) {
+	protected final <T extends Model> List<T> getMany(Class<T> type, String foreignKey) {
 		return new Select().from(type).where(Cache.getTableName(type) + "." + foreignKey + "=?", getId()).execute();
 	}
 
@@ -294,6 +298,11 @@ public abstract class Model {
 	//////////////////////////////////////////////////////////////////////////////////////
 	// OVERRIDEN METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
+
+	@Override
+	public String toString() {
+		return mTableInfo.getTableName() + "@" + getId();
+	}
 
 	@Override
 	public boolean equals(Object obj) {

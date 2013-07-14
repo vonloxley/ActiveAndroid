@@ -28,6 +28,12 @@ import com.activeandroid.util.Log;
 
 public final class Cache {
 	//////////////////////////////////////////////////////////////////////////////////////
+	// PUBLIC CONSTANTS
+	//////////////////////////////////////////////////////////////////////////////////////
+
+	public static final int DEFAULT_CACHE_SIZE = 1024;
+
+	//////////////////////////////////////////////////////////////////////////////////////
 	// PRIVATE MEMBERS
 	//////////////////////////////////////////////////////////////////////////////////////
 
@@ -52,7 +58,7 @@ public final class Cache {
 	// PUBLIC METHODS
 	//////////////////////////////////////////////////////////////////////////////////////
 
-	public static synchronized void initialize(Application application) {
+	public static synchronized void initialize(Application application, int cacheSize) {
 		if (sIsInitialized) {
 			Log.v("ActiveAndroid already initialized.");
 			return;
@@ -80,7 +86,7 @@ public final class Cache {
 	public static synchronized void dispose() {
 		checkInitialization();
 		closeDatabase();
-		
+
 		sEntities = null;
 		sModelInfo = null;
 		sDatabaseHelper = null;

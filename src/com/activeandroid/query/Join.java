@@ -62,25 +62,33 @@ public final class Join implements Sqlable {
 
 	@Override
 	public String toSql() {
-		String sql = "";
+		StringBuilder sql = new StringBuilder();
 
 		if (mJoinType != null) {
-			sql += mJoinType.toString() + " ";
+			sql.append(mJoinType.toString()).append(" ");
 		}
 
-		sql += "JOIN " + Cache.getTableName(mType) + " ";
+		sql.append("JOIN ");
+		sql.append(Cache.getTableName(mType));
+		sql.append(" ");
 
 		if (mAlias != null) {
-			sql += "AS " + mAlias + " ";
+			sql.append("AS ");
+			sql.append(mAlias);
+			sql.append(" ");
 		}
 
 		if (mOn != null) {
-			sql += "ON " + mOn + " ";
+			sql.append("ON ");
+			sql.append(mOn);
+			sql.append(" ");
 		}
 		else if (mUsing != null) {
-			sql += "USING (" + TextUtils.join(", ", mUsing) + ") ";
+			sql.append("USING (");
+			sql.append(TextUtils.join(", ", mUsing));
+			sql.append(") ");
 		}
 
-		return sql;
+		return sql.toString();
 	}
 }
