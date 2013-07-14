@@ -185,7 +185,7 @@ public final class SQLiteUtils {
 			if (cursor.moveToFirst()) {
 				do {
 					T entity = (T) entityConstructor.newInstance();
-					entity.loadFromCursor(cursor);
+					entity.loadFromCursor(type, cursor);
 					entities.add(entity);
 				}
 				while (cursor.moveToNext());
