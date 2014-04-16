@@ -16,6 +16,10 @@ package com.activeandroid.util;
  * limitations under the License.
  */
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -23,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -229,5 +234,28 @@ public final class SQLiteUtils {
 		}
 
 		return sl;
+	}
+
+	public static void executeSqlScript(SQLiteDatabase db, InputStream is) {
+		try {
+			final BufferedReader reader = new BufferedReader(new InputStreamReader(is));
+
+			StringBuilder sb = new StringBuilder(255);
+			String line = null;
+
+			while ((line = reader.readLine()) != null) {
+				sb.append(line).append('\n');
+			}
+
+			for (String s : lexSqlScript(sb.toString())) {
+				if (!"\n".equals(s)) {
+					db.execSQL(s);
+				}
+			}
+
+		}
+		catch (IOException e) {
+			Log.e("Failed to execute " + is, e);
+		}
 	}
 }

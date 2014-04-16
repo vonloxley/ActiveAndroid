@@ -16,12 +16,10 @@ package com.activeandroid;
  * limitations under the License.
  */
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
@@ -152,7 +150,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 						final int version = Integer.valueOf(file.replace(".sql", ""));
 
 						if (version > oldVersion && version <= newVersion) {
-							executeSqlScript(db, file);
+							SQLiteUtils.executeSqlScript(db, Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file));
 							migrationExecuted = true;
 
 							Log.i(file + " executed succesfully.");
@@ -175,29 +173,7 @@ public final class DatabaseHelper extends SQLiteOpenHelper {
 		return migrationExecuted;
 	}
 
-	private void executeSqlScript(SQLiteDatabase db, String file) {
-		try {
-			final InputStream input = Cache.getContext().getAssets().open(MIGRATION_PATH + "/" + file);
-			final BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
-			StringBuilder sb = new StringBuilder(255);
-			String line = null;
-
-			while ((line = reader.readLine()) != null) {
-				sb.append(line).append('\n');
-			}
-
-			for (String s : SQLiteUtils.lexSqlScript(sb.toString())) {
-				if (!"\n".equals(s)) {
-					db.execSQL(s);
-				}
-			}
-
-		}
-		catch (IOException e) {
-			Log.e("Failed to execute " + file, e);
-		}
-	}
+	
 
 	// Meta-data methods
 
